@@ -1,0 +1,36 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{0EDF31BA-3BAF-4AEF-9750-41E3F520C77C}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="prRespStringGrid.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="prRespStringGrid">
+        <MSBuild Projects="prRespStringGrid.dproj"/>
+    </Target>
+    <Target Name="prRespStringGrid:Clean">
+        <MSBuild Projects="prRespStringGrid.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="prRespStringGrid:Make">
+        <MSBuild Projects="prRespStringGrid.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="prRespStringGrid"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="prRespStringGrid:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="prRespStringGrid:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

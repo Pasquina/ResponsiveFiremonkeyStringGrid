@@ -1,0 +1,16 @@
+﻿[FDBatchMoveTextReader1]
+Coordinates=122,1,144,33
+
+[FDBatchMove1]
+Coordinates=122,56,88,33
+
+[mtStateData]
+Coordinates=10,10,74,141
+Visible=True
+
+[FDBatchMoveDataSetWriter1]
+Coordinates=311,1,156,33
+
+[]
+Coordinates=122,111,91,36
+
