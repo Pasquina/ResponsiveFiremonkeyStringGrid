@@ -5,4 +5,4 @@ Making the column widths of a Firemonkey string grid requires only a few lines o
 
 The code is straightforward, but not limiting. In the demo, the column widths are adjusted and minimim widths and maximum widths are applied. Additional kinds of adjustments can also be applied depending on the needs of the individual application and inventiveness of the developer.
 
-There is an associated blog post. When ready, this Readme will be updated with a link to the blog post.
+There is an associated blog post with additional information at [Delphi Chops—Responsive FireMonkey String Grid.](https://delphichops.blogspot.com/2021/07/firemonkey-string-grid-responsive.html "Delphi Chops")
