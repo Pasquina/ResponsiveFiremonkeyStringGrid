@@ -1,7 +1,7 @@
 object dRespStringGrid: TdRespStringGrid
   OldCreateOrder = False
-  Height = 508
-  Width = 668
+  Height = 228
+  Width = 385
   object mtStateData: TFDMemTable
     ActiveStoredUsage = [auDesignTime]
     FieldDefs = <

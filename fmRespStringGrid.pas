@@ -7,8 +7,8 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   FMX.Controls.Presentation, FMX.StdCtrls, FMX.Layouts, dmRespStringGrid,
   Data.Bind.Controls, System.Rtti, FMX.Grid.Style, FMX.ScrollBox, FMX.Grid,
-  Fmx.Bind.Navigator, Data.Bind.EngExt, Fmx.Bind.DBEngExt, Data.Bind.Components,
-  System.Bindings.Outputs, Fmx.Bind.Editors, Fmx.Bind.Grid, Data.Bind.Grid,
+  FMX.Bind.Navigator, Data.Bind.EngExt, FMX.Bind.DBEngExt, Data.Bind.Components,
+  System.Bindings.Outputs, FMX.Bind.Editors, FMX.Bind.Grid, Data.Bind.Grid,
   Data.Bind.DBScope, FMX.Memo.Types, FMX.Memo;
 
 type
@@ -52,47 +52,80 @@ uses
   System.Math;
 
 {$R *.fmx}
+{ Save the current FDMem table to persistent media. }
 
 procedure TfRespStringGrid.btSaveClick(Sender: TObject);
 begin
   dRespStringGrid.mtStateData.SaveToFile('..\..\USPopulationEstimates.xml');
 end;
 
+{ Calculate the column widths displayed in the grid. }
+
 procedure TfRespStringGrid.CalcColumnWidths;
+type
+  ColParam = (cpMinSize, cpMaxSize, cpProportion);  // to index column property array
 var
-  LContentWidth: Single;
-  LPropSum: Single;
-  LColIx: Integer;
-  LCurProp: Single;
+  LContentWidth: Single;                            // the width available in the grid for columns
+  LPropSum: Single;                                 // the sum of all column proportion values
+  LColIx: Integer;                                  // column index into column property array
+  LCurProp: Single;                                 // calculated column width using only proportion, without constraints
 const
-  LColumnResp: Array[0..3, 1..3] of Single =
-    ((90.0, 100.0, 2.0), (125.0, 175.0, 5.0),(100.0, 125.0, 2.0),(100.0, 125.0, 2.0));
+
+  { Each column has three property values associated:
+    Minimum column width. The column width will never be set lower than this value
+    Maximum column width. The column width will never be set greater than this value
+    Column Proportion. The column's width will be calculated using this value as a proportion
+    but will be constrained by the specified minimum and maximum values }
+
+  LColumnResp: Array [0 .. 3, ColParam] of Single = // column property array
+    ((90.0, 100.0, 2.0), (125.0, 175.0, 5.0), (100.0, 125.0, 2.0), (100.0, 125.0, 2.0));
 begin
-  LContentWidth := sgPopulation.Content.Width;
+  LContentWidth := sgPopulation.Content.Width;      // obtain width available for columns
 
-  LPropSum := 0;
-  for LColIx := Low(LColumnResp) to High(LColumnResp) do
-    LPropSum := LPropSum + LColumnResp[LColIx, 3];
+  { Calculate the sum of all column proportion properties to be used as the denominator in
+    the individual column width calculation by proportion. }
 
-  if sgPopulation.ColumnCount < (High(LColumnResp) + 1) then
-  Exit;
+  LPropSum := 0;                                    // init
+  for LColIx := Low(LColumnResp) to High(LColumnResp) do // loop over entire array
+    LPropSum := LPropSum + LColumnResp[LColIx, cpProportion]; // add proportion property value to total
 
-  for LColIx := Low(LColumnResp) to High(LColumnResp) do
+  { This routine may be called before columns are actually created. The following avoids index
+    out of range violations by exiting when there are an insufficient number of columns actually defined. }
+
+  if sgPopulation.ColumnCount < (High(LColumnResp) + 1) then // make sure there are enough columns
+    Exit;                                           // hop out if insufficient column count
+
+  { Set the column width for each column as specified by the column property array. For each column
+    the width value is calculated as a proportion using the total of all proportion properties as the
+    denominator and the individual proportion as the numerator of each column. This value is further
+    constrained by the minimum and maximum values for the column. }
+
+  sgPopulation.BeginUpdate;                         // increase update semaphore count to avoid painting during update
+
+  for LColIx := Low(LColumnResp) to High(LColumnResp) do // loop over all array entries
     begin
-      LCurProp := (LColumnResp[LColIx, 3] / LPropSum) * LContentWidth;
-      sgPopulation.Columns[LColIx].Width := Min(Max(LColumnResp[LColIx, 1], LCurProp), LColumnResp[LColIx, 2]);
+      LCurProp := (LColumnResp[LColIx, cpProportion] / LPropSum) * LContentWidth; // determine current width by proportion
+      sgPopulation.Columns[LColIx].Width := // constrain the proportional width using Min and Max values for the column
+        Min(Max(LColumnResp[LColIx, cpMinSize], LCurProp), LColumnResp[LColIx, cpMaxSize]);
     end;
+
+  sgPopulation.EndUpdate;                           // decrease update semaphore count to permit painting
 end;
 
-procedure TfRespStringGrid.LinkGridToDataSourceBindSourceDB1Activated(
-  Sender: TObject);
+{ Event is fired when activating the LiveBindings for the grid. This is used to set the column widths
+  initially and precludes having to set desired widths in the column specifications. }
+
+procedure TfRespStringGrid.LinkGridToDataSourceBindSourceDB1Activated(Sender: TObject);
 begin
-  CalcColumnWidths;
+  CalcColumnWidths;                                 // invoke the column width algorithm
 end;
+
+{ This event fires when the grid is resized, generally in response to the window being resized. The column widtdhs
+  are adjusted by invlking the width algorithm. }
 
 procedure TfRespStringGrid.sgPopulationResized(Sender: TObject);
 begin
-  CalcColumnWidths;
+  CalcColumnWidths;                                 // invoke the column width algorithm
 end;
 
 end.
